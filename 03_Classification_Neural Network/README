@@ -1,0 +1,500 @@
+# 03 — Classification Neural Network
+
+A neural network built from scratch using **NumPy** for multi-class classification.
+
+This project extends the previous neural networks by introducing:
+
+- Multiple output classes
+- ReLU activation
+- Softmax activation
+- One-hot encoded targets
+- Cross-Entropy Loss
+- Multi-class prediction using `argmax`
+- Classification accuracy
+- Softmax + Cross-Entropy gradient
+
+The complete network is implemented manually without using a machine-learning framework.
+
+---
+
+## 📁 Project Structure
+
+```text
+03_classification_network/
+├── model.py
+├── testing.py
+└── README.md
+```
+
+### `model.py`
+
+Contains the neural network implementation, including:
+
+- Weight initialization
+- Forward propagation
+- ReLU
+- Softmax
+- Cross-Entropy Loss
+- Backpropagation
+- Gradient descent
+- Prediction
+
+### `testing.py`
+
+Contains:
+
+- Training dataset
+- One-hot encoded labels
+- Model training
+- Unseen test samples
+- Predictions
+
+---
+
+# 🧠 Network Architecture
+
+```text
+Input
+  │
+  ▼
+4 Features
+  │
+  ▼
+Dense Layer
+4 → 8
+  │
+  ▼
+ReLU
+  │
+  ▼
+Dense Layer
+8 → 4
+  │
+  ▼
+ReLU
+  │
+  ▼
+Dense Layer
+4 → 3
+  │
+  ▼
+Softmax
+  │
+  ▼
+3 Class Probabilities
+```
+
+### Architecture
+
+```text
+4 → 8 → 4 → 3
+```
+
+The final layer contains **3 neurons because there are 3 possible classes**.
+
+---
+
+# 📊 Dataset
+
+The network uses a small synthetic dataset containing **4 input features** and **3 classes**.
+
+Example:
+
+```python
+X = np.array([
+    [1.0, 1.0, 0.0, 0.0],
+    [1.2, 0.8, 0.1, 0.0],
+    [0.8, 1.1, 0.2, 0.1],
+
+    [0.0, 1.0, 1.0, 0.0],
+    [0.1, 1.2, 0.8, 0.1],
+    [0.0, 0.9, 1.1, 0.2],
+
+    [0.0, 0.0, 1.0, 1.0],
+    [0.1, 0.1, 1.2, 0.9],
+    [0.0, 0.2, 0.9, 1.1]
+])
+```
+
+The targets are represented using **one-hot encoding**:
+
+```text
+Class 0 → [1, 0, 0]
+Class 1 → [0, 1, 0]
+Class 2 → [0, 0, 1]
+```
+
+---
+
+# ⚡ Activation Functions
+
+## ReLU
+
+The hidden layers use ReLU:
+
+```text
+ReLU(x) = max(0, x)
+```
+
+It removes negative values while keeping positive values.
+
+Example:
+
+```text
+[-2, -1, 0, 2, 5]
+
+        ↓ ReLU
+
+[ 0,  0, 0, 2, 5]
+```
+
+ReLU derivative:
+
+```text
+x > 0  → 1
+x ≤ 0  → 0
+```
+
+---
+
+# 🎯 Softmax
+
+The final layer uses Softmax.
+
+Softmax converts the raw output values (**logits**) into probabilities.
+
+For each class:
+
+```text
+Pᵢ = eᶻⁱ / Σ eᶻʲ
+```
+
+For example:
+
+```text
+Logits:
+
+[2.5, 1.2, 0.3]
+
+        ↓ Softmax
+
+[0.723, 0.197, 0.080]
+```
+
+The probabilities add up to approximately:
+
+```text
+1.0
+```
+
+The class with the highest probability becomes the prediction.
+
+---
+
+# 🧮 Cross-Entropy Loss
+
+For multi-class classification, the network uses **Cross-Entropy Loss**.
+
+```text
+L = -Σ yᵢ log(ŷᵢ)
+```
+
+In the implementation:
+
+```python
+loss = -np.mean(
+    np.sum(self.y * np.log(a3 + 1e-8), axis=1)
+)
+```
+
+The small value:
+
+```text
+1e-8
+```
+
+is added for numerical stability so that `log(0)` does not occur.
+
+A lower loss generally means the model's predicted probabilities are becoming better aligned with the correct classes.
+
+---
+
+# 🔄 Forward Propagation
+
+The network performs the following calculations:
+
+```text
+X
+ ↓
+Z1 = XW1 + b1
+ ↓
+A1 = ReLU(Z1)
+ ↓
+Z2 = A1W2 + b2
+ ↓
+A2 = ReLU(Z2)
+ ↓
+Z3 = A2W3 + b3
+ ↓
+A3 = Softmax(Z3)
+```
+
+`A3` contains the predicted probability distribution for each sample.
+
+---
+
+# 🔙 Backpropagation
+
+The output-layer gradient uses the simplified derivative of **Softmax + Cross-Entropy**:
+
+```python
+dz3 = a3 - self.y
+```
+
+This is an important concept in this project.
+
+Instead of separately calculating:
+
+```text
+Softmax derivative
+        +
+Cross-Entropy derivative
+```
+
+their combined derivative simplifies to:
+
+```text
+dZ = prediction - actual
+```
+
+The gradient is then propagated backwards:
+
+```text
+dZ3
+ ↓
+W3.T
+ ↓
+dA2
+ ↓
+ReLU derivative
+ ↓
+dZ2
+ ↓
+W2.T
+ ↓
+dA1
+ ↓
+ReLU derivative
+ ↓
+dZ1
+```
+
+---
+
+# 🔢 Prediction
+
+After the Softmax layer, the model has three probabilities.
+
+For example:
+
+```text
+[0.10, 0.75, 0.15]
+```
+
+The highest probability is at index `1`.
+
+Therefore:
+
+```text
+Prediction → Class 1
+```
+
+NumPy's `argmax()` is used to select the class with the highest probability.
+
+For multiple samples:
+
+```python
+np.argmax(a3, axis=1)
+```
+
+returns one predicted class for each sample.
+
+---
+
+# 📈 Accuracy
+
+Accuracy is calculated by comparing:
+
+```text
+Predicted Class
+        vs
+Actual Class
+```
+
+The model converts one-hot encoded labels back into class indices using `argmax`.
+
+Example:
+
+```text
+Actual:
+
+[0, 1, 2]
+
+Predicted:
+
+[0, 1, 2]
+```
+
+Accuracy:
+
+```text
+100%
+```
+
+---
+
+# 🏋️ Training
+
+The network is trained using gradient descent.
+
+The general process is:
+
+```text
+Initialize weights
+       ↓
+Forward propagation
+       ↓
+Calculate predictions
+       ↓
+Calculate gradients
+       ↓
+Backpropagation
+       ↓
+Update weights
+       ↓
+Repeat
+```
+
+Training progress is monitored periodically using:
+
+- Cross-Entropy Loss
+- Classification Accuracy
+
+Example output:
+
+```text
+Iteration: 0
+Loss: ...
+Accuracy: ...
+
+Iteration: 10000
+Loss: ...
+Accuracy: ...
+```
+
+---
+
+# 🧪 Testing
+
+After training, the model is tested using previously unseen samples.
+
+The testing phase is separate from training data so that the network can be checked on inputs it did not directly train on.
+
+Example:
+
+```python
+test_1
+test_2
+test_3
+test_4
+test_5
+```
+
+Each sample is passed through the same forward-propagation pipeline:
+
+```text
+Input
+ ↓
+Dense
+ ↓
+ReLU
+ ↓
+Dense
+ ↓
+ReLU
+ ↓
+Dense
+ ↓
+Softmax
+ ↓
+Predicted Class
+```
+
+---
+
+# 🆚 What Changed From Project 2?
+
+Project 2 was primarily focused on learning how a deeper network propagates gradients through multiple hidden layers.
+
+This project introduces **multi-class classification**.
+
+| Project 2 | Project 3 |
+|---|---|
+| Binary output | 3 classes |
+| Sigmoid output | Softmax output |
+| MSE | Cross-Entropy |
+| Single output neuron | 3 output neurons |
+| Binary prediction | Multi-class prediction |
+| `y ≈ 0/1` | One-hot encoded targets |
+| Regression-style loss | Classification loss |
+
+---
+
+# 🧠 What I Learned
+
+This project helped me understand:
+
+- How multi-class neural networks work
+- Why the output layer needs multiple neurons
+- One-hot encoding
+- Softmax probability distributions
+- Cross-Entropy Loss
+- `argmax()` for class prediction
+- Classification accuracy
+- Softmax + Cross-Entropy gradient
+- Backpropagation through multiple hidden layers
+- Matrix transposes during backpropagation
+- Gradient descent
+- Weight initialization
+- Numerical stability in Softmax and logarithms
+
+---
+
+# 🛠️ Technologies
+
+- Python
+- NumPy
+
+No high-level machine-learning framework was used.
+
+The neural network was implemented manually to understand the underlying mathematics and mechanics.
+
+---
+
+# 🚀 Next Project
+
+**Project 04 — Regression Neural Network**
+
+The next project will switch from classification to **regression** and introduce:
+
+- Continuous numerical outputs
+- Feature scaling
+- Regression loss
+- Different output-layer design
+- A more realistic regression dataset
+
+Architecture:
+
+```text
+n → 16 → 8 → 1
+```

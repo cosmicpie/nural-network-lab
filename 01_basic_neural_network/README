@@ -1,0 +1,248 @@
+# Project 01 — Basic Neural Network
+
+A basic neural network built completely from scratch using **NumPy**.
+
+The goal of this project is to understand the fundamental mechanics of a neural network without using frameworks such as PyTorch or TensorFlow.
+
+---
+
+## 🧠 Architecture
+
+```text
+Input Layer       Hidden Layer       Output Layer
+
+3 neurons   →      3 neurons    →     1 neuron
+                    Sigmoid            Sigmoid
+```
+
+```text
+3 → 3 → 1
+```
+
+---
+
+## 📁 Project Structure
+
+```text
+01_basic_neural_network/
+│
+├── model.py
+├── testing.py
+└── README.md
+```
+
+### `model.py`
+
+Contains the complete neural network implementation:
+
+- Network architecture
+- Weight initialization
+- Bias initialization
+- Sigmoid activation
+- Forward propagation
+- Backpropagation
+- Gradient calculation
+- Weight updates
+- Bias updates
+- Training
+- Prediction
+
+### `testing.py`
+
+Used to run and test the trained neural network.
+
+It:
+
+1. Creates the training dataset.
+2. Creates the model.
+3. Trains the network.
+4. Tests predictions on input data.
+
+---
+
+## 📊 Dataset
+
+The network receives **three binary inputs** and learns a 3-input parity pattern.
+
+```text
+000 → 0
+001 → 1
+010 → 1
+011 → 0
+100 → 1
+101 → 0
+110 → 0
+111 → 1
+```
+
+### Input
+
+```python
+X = np.array([
+    [0.0, 0.0, 0.0],
+    [0.0, 0.0, 1.0],
+    [0.0, 1.0, 0.0],
+    [0.0, 1.0, 1.0],
+    [1.0, 0.0, 0.0],
+    [1.0, 0.0, 1.0],
+    [1.0, 1.0, 0.0],
+    [1.0, 1.0, 1.0]
+], dtype=np.float32)
+```
+
+### Target
+
+```python
+y = np.array([
+    [0.0],
+    [1.0],
+    [1.0],
+    [0.0],
+    [1.0],
+    [0.0],
+    [0.0],
+    [1.0]
+], dtype=np.float32)
+```
+
+---
+
+## ⚙️ Technologies
+
+- Python
+- NumPy
+- Matrix multiplication
+- Sigmoid activation
+- Mean Squared Error
+- Manual backpropagation
+- Gradient descent
+
+No deep-learning framework is used.
+
+---
+
+# 🔄 Forward Propagation
+
+The input moves through the network layer by layer.
+
+### Hidden Layer
+
+```text
+Z1 = XW1 + b1
+A1 = sigmoid(Z1)
+```
+
+### Output Layer
+
+```text
+Z2 = A1W2 + b2
+A2 = sigmoid(Z2)
+```
+
+For the complete dataset:
+
+```text
+X  = (8, 3)
+W1 = (3, 3)
+
+A1 = (8, 3)
+
+W2 = (3, 1)
+
+A2 = (8, 1)
+```
+
+---
+
+# 🔁 Backpropagation
+
+The prediction error is propagated backward through the network.
+
+```text
+error = y - A2
+
+dZ2 = error × sigmoid_derivative(A2)
+
+dA1 = dZ2 @ W2.T
+
+dZ1 = dA1 × sigmoid_derivative(A1)
+```
+
+The gradients are then used to update the parameters.
+
+---
+
+# 📐 Weight Updates
+
+```python
+W1 += learning_rate * X.T @ dZ1
+W2 += learning_rate * A1.T @ dZ2
+```
+
+Biases are updated using the sum of the gradients.
+
+```python
+b1 += learning_rate * np.sum(dZ1, axis=0, keepdims=True)
+b2 += learning_rate * np.sum(dZ2, axis=0, keepdims=True)
+```
+
+---
+
+# 📉 Loss
+
+Mean Squared Error is used to measure prediction error.
+
+```text
+MSE = 1/n Σ(y - ŷ)²
+```
+
+The objective is to reduce the difference between the target and predicted values.
+
+---
+
+# 🔮 Prediction
+
+After training, the model can make predictions using:
+
+```python
+model.prediction(X)
+```
+
+The sigmoid output is converted into a binary prediction:
+
+```python
+pred = np.round(a2)
+```
+
+---
+
+# 🎯 What I Learned
+
+This project helped me understand:
+
+- Neural network architecture
+- Layers and neurons
+- Weights and biases
+- Matrix multiplication
+- Forward propagation
+- Sigmoid activation
+- Sigmoid derivative
+- Backpropagation
+- Gradient descent
+- Weight updates
+- Bias updates
+- Basic NumPy neural-network implementation
+
+---
+
+# 🚀 Next Project
+
+**Project 02 — Deeper MLP**
+
+The next project adds another hidden layer and introduces:
+
+- Multiple hidden layers
+- ReLU activation
+- Multi-layer backpropagation
+- More complex gradient flow
+- Different activation functions for hidden and output layers

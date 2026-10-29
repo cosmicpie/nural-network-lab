@@ -1,0 +1,426 @@
+# Project 04 — Regression Neural Network
+
+A regression neural network built completely from scratch using **NumPy**.
+
+The goal of this project was to understand how a neural network can predict a **continuous numerical value** rather than a class label.
+
+For this project, the network predicts **house prices in lakhs** from four input features.
+
+---
+
+## 🧠 Architecture
+
+```text
+Input (4 features)
+       ↓
+Dense Layer (4 → 16)
+       ↓
+ReLU
+       ↓
+Dense Layer (16 → 8)
+       ↓
+ReLU
+       ↓
+Dense Layer (8 → 1)
+       ↓
+Linear Output
+       ↓
+Predicted House Price
+```
+
+### Architecture
+
+```text
+4 → 16 → 8 → 1
+```
+
+- Input layer: 4 features
+- Hidden layer 1: 16 neurons
+- Hidden layer 2: 8 neurons
+- Output layer: 1 neuron
+- Hidden activation: ReLU
+- Output activation: Linear
+
+---
+
+## 📊 Dataset
+
+The dataset contains four input features:
+
+| Feature | Description |
+|---|---|
+| Area | House area |
+| Bedrooms | Number of bedrooms |
+| Age | Age of the house |
+| Distance | Distance from city |
+
+Target:
+
+```text
+House Price (Lakhs)
+```
+
+Example:
+
+```python
+X = [
+    [800,  2, 10, 8],
+    [1000, 2,  8, 6],
+    [1200, 3,  7, 5],
+    ...
+]
+
+y = [
+    [25],
+    [30],
+    [38],
+    ...
+]
+```
+
+The dataset contains only 8 samples and is intentionally small for learning and experimentation.
+
+---
+
+## ⚙️ Feature Scaling
+
+The input features have very different numerical ranges.
+
+For example:
+
+```text
+Area       → 800–2200
+Bedrooms   → 2–5
+Age        → 1–10
+Distance   → 1–8
+```
+
+Therefore, the input features were standardized using:
+
+```text
+X_scaled = (X - mean) / standard_deviation
+```
+
+This makes the features more comparable and improves optimization stability.
+
+The same training-set mean and standard deviation were also used to scale test data.
+
+---
+
+## 🔥 Activation Function — ReLU
+
+The hidden layers use ReLU:
+
+```text
+ReLU(x) = max(0, x)
+```
+
+Implementation:
+
+```python
+def relu(self, a):
+    return np.maximum(0, a)
+```
+
+Derivative:
+
+```python
+def relu_derivative(self, a):
+    return np.where(a > 0, 1, 0)
+```
+
+ReLU allows the network to learn nonlinear relationships between the input features and house prices.
+
+---
+
+## 📉 Output Layer
+
+Unlike the classification network from Project 3, this network does not use Softmax.
+
+Regression requires a continuous output.
+
+Therefore:
+
+```text
+a3 = z3
+```
+
+This is a **linear output activation**.
+
+For example:
+
+```text
+61.4071
+```
+
+is directly interpreted as the predicted house price in lakhs.
+
+---
+
+## 📐 Loss Function — Mean Squared Error
+
+The network uses Mean Squared Error:
+
+```text
+MSE = 1/m Σ(a3 - y)²
+```
+
+Implementation:
+
+```python
+loss = np.mean((a3 - self.y)**2)
+```
+
+MSE measures how far the predicted values are from the actual values.
+
+---
+
+## 🔙 Backpropagation
+
+The output layer uses the derivative:
+
+```text
+dz3 = 2(a3 - y) / m
+```
+
+Because the output layer is linear:
+
+```text
+a3 = z3
+```
+
+therefore:
+
+```text
+∂a3/∂z3 = 1
+```
+
+The gradient is then propagated backwards:
+
+```text
+dz3
+ ↓
+W3.T
+ ↓
+dz2
+ ↓
+W2.T
+ ↓
+dz1
+```
+
+Weight gradients are calculated using matrix multiplication:
+
+```python
+dw3 = np.dot(a2.T, dz3)
+dw2 = np.dot(a1.T, dz2)
+dw1 = np.dot(self.x.T, dz1)
+```
+
+Bias gradients are calculated by summing the gradients across the batch.
+
+---
+
+## 🎲 Weight Initialization
+
+The hidden layers use **He initialization**, which is suitable for ReLU-based networks.
+
+```python
+np.random.randn(4, 16) * np.sqrt(2/4)
+np.random.randn(16, 8) * np.sqrt(2/16)
+np.random.randn(8, 1) * np.sqrt(2/8)
+```
+
+A fixed random seed was used for reproducibility:
+
+```python
+np.random.seed(42)
+```
+
+---
+
+## 📈 Training
+
+Learning rate:
+
+```text
+0.001
+```
+
+Training iterations:
+
+```text
+100,000
+```
+
+Initial loss:
+
+```text
+3014.8282
+```
+
+After training:
+
+```text
+Loss ≈ 0
+```
+
+The model successfully learned the relationship represented by the training dataset.
+
+---
+
+## 🐛 Training Debugging
+
+One of the most important parts of this project was debugging an unstable training process.
+
+Initially, a learning rate of:
+
+```text
+0.01
+```
+
+was used.
+
+The network initially learned, but later the activations exploded:
+
+```text
+z1 ≈ 10⁵¹
+z2 ≈ 10¹⁰¹
+```
+
+This caused the second ReLU layer to become completely inactive:
+
+```text
+a2 = 0
+```
+
+and the loss became stuck around:
+
+```text
+340.1875
+```
+
+After feature scaling and reducing the learning rate to:
+
+```text
+0.001
+```
+
+the network trained stably.
+
+This demonstrated the practical importance of:
+
+- Feature scaling
+- Learning-rate selection
+- Monitoring activations
+- Understanding dead ReLU neurons
+- Debugging gradient/optimization problems
+
+---
+
+## 🧪 Testing
+
+The trained model was tested on previously unseen inputs.
+
+| Test Input | Prediction |
+|---|---:|
+| `[900, 2, 9, 7]` | **27.50 L** |
+| `[1300, 3, 6, 5]` | **36.47 L** |
+| `[1700, 4, 3, 3]` | **61.41 L** |
+| `[1900, 4, 2, 2]` | **69.61 L** |
+| `[2100, 5, 1, 1]` | **80.43 L** |
+
+The model produced reasonable predictions for unseen samples.
+
+Because the dataset contains only 8 training examples, these results should not be interpreted as evidence of production-level generalization.
+
+---
+
+## 🔄 Classification vs Regression
+
+This project also demonstrates the main difference between the previous classification network and regression.
+
+### Classification
+
+```text
+Output → Softmax
+Loss   → Cross-Entropy
+Prediction → Class
+```
+
+### Regression
+
+```text
+Output → Linear
+Loss   → MSE
+Prediction → Continuous value
+```
+
+For example:
+
+```text
+Classification:
+[0.02, 0.94, 0.04]
+→ Class 1
+
+Regression:
+61.4071
+→ 61.4071 lakhs
+```
+
+---
+
+## 🎯 What I Learned
+
+Through this project, I learned:
+
+- How neural networks perform regression
+- Why regression uses a linear output layer
+- How MSE is derived and differentiated
+- How to calculate the output gradient manually
+- How gradients propagate through multiple hidden layers
+- How ReLU behaves during backpropagation
+- Why feature scaling matters
+- How learning rate affects training stability
+- How exploding activations can occur
+- How dead ReLU neurons can stop learning
+- How He initialization works with ReLU
+- How to make predictions on unseen data
+
+Most importantly, I learned that a mathematically correct neural network can still fail during training because of **optimization and numerical stability issues**.
+
+---
+
+## 🛠️ Technologies
+
+- Python
+- NumPy
+- Neural Networks
+- Linear Algebra
+- Gradient Descent
+- Backpropagation
+
+---
+
+## 📁 Project Structure
+
+```text
+04_Regression Neural Network/
+├── model.py
+├── training.py
+└── README.md
+```
+
+---
+
+## 🚀 Next Project
+
+**Project 05 — Regularized Neural Network**
+
+The next project will introduce:
+
+- L2 Regularization
+- Dropout
+- Early Stopping
+- Overfitting control
+- Model generalization
